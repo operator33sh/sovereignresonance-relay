@@ -144,7 +144,24 @@ func (s *relayStore) QueryEvents(ctx context.Context, filter nostr.Filter) (chan
 		close(ch)
 		return ch, nil
 	}
-	return s.Store.QueryEvents(ctx, filter)
+	
+	ch, err := s.Store.QueryEvents(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	
+	filteredCh := make(chan *nostr.Event)
+	go func() {
+		defer close(filteredCh)
+		for evt := range ch {
+			switch evt.Kind {
+			case 3, 6, 7, 9735:
+				continue
+			}
+			filteredCh <- evt
+		}
+	}()
+	return filteredCh, nil
 }
 
 // CountEvents implements NIP-45 COUNT and applies the same empty-tag-set handling
@@ -248,7 +265,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 	}
 
 	switch evt.Kind {
-	case 3, 6, 9735:
+	case 3, 6, 7, 9735:
 		return false, "denied: this kind is disabled"
 	}
 
