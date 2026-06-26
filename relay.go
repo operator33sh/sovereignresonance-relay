@@ -247,6 +247,11 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 		return false, ""
 	}
 
+	switch evt.Kind {
+	case 3, 6, 9735:
+		return false, "denied: this kind is disabled"
+	}
+
 	if nip70.IsProtected(*evt) {
 		pubkey, ok := relayer.GetAuthStatus(ctx)
 		if !ok {
