@@ -155,8 +155,8 @@ func (s *relayStore) QueryEvents(ctx context.Context, filter nostr.Filter) (chan
 		defer close(filteredCh)
 		for evt := range ch {
 			switch evt.Kind {
-			case 3, 6, 7, 9735:
-				continue
+	case 6, 7, 9735:
+		continue
 			}
 			filteredCh <- evt
 		}
@@ -265,7 +265,7 @@ func (r *Relay) AcceptEvent(ctx context.Context, evt *nostr.Event) (bool, string
 	}
 
 	switch evt.Kind {
-	case 3, 6, 7, 9735:
+	case 6, 7, 9735:
 		return false, "denied: this kind is disabled"
 	}
 
